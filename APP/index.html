@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuentas de casa</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="loginScreen">
+  <h2>Cuentas de Casa</h2>
+  <div class="sub" style="margin-bottom: 20px;">Ingresá la contraseña para ver los gastos</div>
+  <input type="password" id="passInput" placeholder="Contraseña">
+  <button class="primary" onclick="checkPass()">Entrar</button>
+  <div id="passError" style="color:var(--warn); margin-top:10px; font-size:13px; display:none;">Contraseña incorrecta</div>
+</div>
+
+<div class="wrap" id="appWrap" style="display:none;">
+
+<header>
+  <div>
+    <h1>Cuentas de casa</h1>
+    <div class="sub">Presupuesto, ahorro y los gastos que están organizando juntos</div>
+  </div>
+  <div class="names">
+    <span class="tagA">●</span><input id="nameA" value="Alondra">
+    <span class="tagB">●</span><input id="nameB" value="Santi">
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" id="btn-tab-hoy" onclick="switchTab('tab-hoy')">Hoy</button>
+  <button class="tab-btn" id="btn-tab-mensual" onclick="switchTab('tab-mensual')">Presupuesto y Metas</button>
+  <button class="tab-btn" id="btn-tab-compartido" onclick="switchTab('tab-compartido')">Deudas y Compartidos</button>
+</div>
+
+<!-- ================= TAB: HOY ================= -->
+<div id="tab-hoy" class="tab-content active">
+    <div class="quote-card">
+      <div>
+        <div class="quote-label">Frase del día</div>
+        <div class="quote-text" id="quoteText"></div>
+      </div>
+      <button class="small" id="btnOtraFrase">Otra frase</button>
+    </div>
+
+    <div class="card" style="border-color: var(--b);">
+      <h2>Límite y Gastos de Hoy</h2>
+      <div class="sub" style="margin-bottom: 14px;">El límite se calcula automáticamente: (Ingresos - Fijos - Ahorros) ÷ 30 días.</div>
+      
+      <div class="stats-row">
+        <div class="stat"><div class="n" id="dailyLimitOut">$0</div><div class="l">Límite por día</div></div>
+        <div class="stat"><div class="n" id="dailySpentOut">$0</div><div class="l">Gastado hoy</div></div>
+        <div class="stat"><div class="n" id="dailyRemainOut">$0</div><div class="l">Disponible hoy</div></div>
+      </div>
+
+      <div class="form-row" style="align-items: flex-end;">
+        <div style="flex:2;"><label>¿En qué gastaste hoy?</label><input type="text" id="gdDesc" placeholder="Ej. Supermercado, Kiosco"></div>
+        <div style="flex:1;"><label>Monto</label><input type="number" id="gdMonto" placeholder="0"></div>
+        <div><button class="primary" id="btnAddGd">+ Agregar</button></div>
+      </div>
+
+      <table class="check-table" style="margin-top:14px;">
+        <thead>
+          <tr><th>Detalle del gasto</th><th style="text-align:right">Monto</th><th style="width: 40px;"></th></tr>
+        </thead>
+        <tbody id="gdList">
+          <!-- Gastos diarios se renderizan aquí -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="border-color: var(--a);">
+      <h2>Gastos de Mía 🐾</h2>
+      <div class="form-row">
+        <div>
+          <label>Última Medicación (Se renueva cada 2 meses)</label>
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <input type="date" id="miaMedsDate">
+            <button id="btnSaveMiaMeds">Guardar</button>
+          </div>
+        </div>
+      </div>
+      <div class="sub" id="miaMedsStatus" style="margin-top:5px; font-weight: 500;"></div>
+    </div>
+</div>
+
+<!-- ================= TAB: MENSUAL ================= -->
+<div id="tab-mensual" class="tab-content">
+    <div class="card">
+      <h2>Meta de ahorro</h2>
+      <div class="form-row">
+        <div><label>¿Para qué están ahorrando?</label><input type="text" id="metaNombre" placeholder="Ej. Escapada de fin de semana" style="width:260px;"></div>
+        <div><label>Objetivo</label><input type="number" id="metaObjetivo" placeholder="0"></div>
+      </div>
+      <div class="meta-bar"><div class="meta-fill" id="metaFill" style="width:0%"></div></div>
+      <div class="meta-nums">
+        <span>Ahorrado: <b id="metaAhorrado">$0</b></span>
+        <span id="metaPct">0%</span>
+        <span>Meta: <b id="metaObjetivoOut">$0</b></span>
+      </div>
+      <div class="sub" id="metaMsg" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Presupuesto del mes</h2>
+      <div class="form-row">
+        <div><label>Ingresos del mes</label><input type="number" id="pIngresos" placeholder="0"></div>
+      </div>
+      <div class="stats-row4" id="presuStats"></div>
+      <div class="grid2">
+        <div>
+          <table class="check-table">
+            <thead><tr><th></th><th>Gasto</th><th>Categoría</th><th>Presup.</th><th>Real</th><th></th></tr></thead>
+            <tbody id="checkBody"></tbody>
+          </table>
+          <div class="form-row" style="margin-top:12px; align-items: flex-end;">
+            <div style="flex:2;"><label>Nuevo gasto</label><input type="text" id="cNombre" placeholder="Ej. Internet"></div>
+            <div style="flex:1.5;"><label>Categoría</label>
+              <select id="cCategoria">
+                <option value="fijo">Gasto fijo</option>
+                <option value="ocio">Ocio</option>
+                <option value="ahorro">Ahorro</option>
+              </select>
+            </div>
+            <div style="flex:1;"><label>Presupuesto</label><input type="number" id="cPresupuesto" placeholder="0"></div>
+            <div><button id="btnAddItem">+ Agregar</button></div>
+          </div>
+        </div>
+        <div>
+          <svg id="presuDonut" viewBox="0 0 200 200" width="100%" style="max-width:200px; display:block; margin:0 auto;"></svg>
+          <div class="legend" id="presuLegend" style="justify-content:center;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Reparto por categoría</h2>
+      <svg id="donut" viewBox="0 0 200 200" width="100%" style="max-width:220px; display:block; margin:0 auto;"></svg>
+      <div class="legend" id="donutLegend"></div>
+    </div>
+</div>
+
+<!-- ================= TAB: COMPARTIDO ================= -->
+<div id="tab-compartido" class="tab-content">
+    <div class="card">
+      <h2>Gastos compartidos / Deudas grandes</h2>
+      <div id="gastosList"></div>
+      <button id="btnAddGasto">+ Agregar gasto o deuda</button>
+      <div class="addform" id="addForm">
+        <div class="form-row">
+          <div style="flex:2;"><label>Nombre</label><input type="text" id="fNombre" placeholder="Ej. Colchón"></div>
+          <div style="flex:1;"><label>Categoría</label>
+            <select id="fCategoria">
+              <option value="hogar">Hogar</option>
+              <option value="salud">Salud</option>
+              <option value="comida">Comida</option>
+              <option value="cuentas">Cuentas / servicios</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div><label>Monto total</label><input type="number" id="fMonto" placeholder="0"></div>
+          <div><label>Tipo</label>
+            <select id="fTipo">
+              <option value="unico">Monto fijo (a pagar de a poco)</option>
+              <option value="cuotas">En cuotas</option>
+            </select>
+          </div>
+          <div id="fCuotasWrap"><label>Cuotas</label><input type="number" id="fCuotas" placeholder="11" value="11"></div>
+        </div>
+        <div class="form-row">
+          <div><label>¿Quién lo paga?</label>
+            <select id="fResp">
+              <option value="compartido">Compartido</option>
+              <option value="A">Solo quien pone nombre A</option>
+              <option value="B">Solo quien pone nombre B</option>
+            </select>
+          </div>
+          <div id="fSplitWrap"><label>% que pone A</label><input type="number" id="fSplit" value="50" min="0" max="100"></div>
+        </div>
+        <div style="margin-top: 10px;">
+          <button class="primary" id="btnSaveGasto">Guardar gasto</button>
+          <button id="btnCancelGasto">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Progreso de Cuotas</h2>
+      <svg id="cuotasChart" viewBox="0 0 320 160" width="100%"></svg>
+      <div class="legend">
+        <span><span class="dot" style="background:#2F6B6E"></span>Pagada</span>
+        <span><span class="dot" style="background:#D8DBCE"></span>Pendiente</span>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-weight:500; font-size:14px;">Copia de seguridad</div>
+        <div class="sub" id="storageStatus"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button id="btnExport">Descargar copia (.json)</button>
+        <button id="btnImport">Cargar copia</button>
+        <input type="file" id="fileImport" accept=".json" style="display:none;">
+      </div>
+    </div>
+
+    <div class="note" id="footerNote"></div>
+</div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
